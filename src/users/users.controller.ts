@@ -32,4 +32,15 @@ export class UsersController {
       lastname: req.user.lastname,
     };
   }
+
+  @Post('logout')
+  @UseGuards(UsersGuard)
+  logout(@Res() response: Response) {
+    response.clearCookie('token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+    return response.send({ message: 'Successfully logged out' });
+  }
 }
