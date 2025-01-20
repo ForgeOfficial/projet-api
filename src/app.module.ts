@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       synchronize: true,
       logging: 'all',
     }),
+    PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

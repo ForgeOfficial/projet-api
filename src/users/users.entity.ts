@@ -8,12 +8,15 @@ export class UsersEntity {
   @Column()
   firstname: string;
 
-  @Column()
+  @Column({ nullable: true })
   lastname: string;
 
-  @Column()
+  @Column({ nullable: true })
   mail: string;
 
   @Column()
   password: string;
+
+  @Column({ default: 'local' })
+  provider: string;
 }
