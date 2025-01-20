@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -7,16 +8,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AnnouncementsEntity } from './announcements.entity';
 import { UpdateAnnouncementsDto } from './announcements.dto';
+import { CACHE_PROVIDER_TOKEN, CacheInterface } from '../cache/cache.interface';
 
 @Injectable()
 export class AnnouncementsService {
   constructor(
     @InjectRepository(AnnouncementsEntity)
     private readonly announcementsRepository: Repository<AnnouncementsEntity>,
+    @Inject(CACHE_PROVIDER_TOKEN) private cacheManager: CacheInterface,
   ) {}
 
   async getAnnouncements() {
-    return this.announcementsRepository
+    const cacheKey = 'get-announcements';
+    const cachedValue = await this.cacheManager.find(cacheKey);
+    if (cachedValue) return cachedValue;
+
+    const announcements = await this.announcementsRepository
       .createQueryBuilder('announcement')
       .leftJoinAndSelect('announcement.user', 'user')
       .select([
@@ -29,6 +36,9 @@ export class AnnouncementsService {
         'user.lastname',
       ])
       .getMany();
+
+    await this.cacheManager.push(cacheKey, announcements);
+    return announcements;
   }
 
   async getAnnouncement(id: number) {
@@ -52,12 +62,14 @@ export class AnnouncementsService {
   }
 
   async postAnnouncements(user: any, announcementData: any) {
+    const cacheKey = 'get-announcements';
     const announcement = this.announcementsRepository.create({
       user: user.id,
       description: announcementData.description,
       image: announcementData.image,
       title: announcementData.title,
     });
+    await this.cacheManager.delete(cacheKey);
     return this.announcementsRepository.save(announcement);
   }
 
@@ -65,6 +77,7 @@ export class AnnouncementsService {
     user: any,
     announcementData: UpdateAnnouncementsDto,
   ) {
+    const cacheKey = 'get-announcements';
     const announcement = await this.announcementsRepository.findOne({
       where: {
         id: announcementData.id,
@@ -72,27 +85,29 @@ export class AnnouncementsService {
     });
     if (!announcement) throw new NotFoundException('Announcement not found');
 
-    if (announcement.user !== user.id)
+    if (announcement.user.id !== user.id)
       throw new UnauthorizedException(
         'Unauthorized action on this announcement',
       );
 
+    await this.cacheManager.delete(cacheKey);
     Object.assign(announcement, announcementData);
     return this.announcementsRepository.save(announcement);
   }
 
   async deleteAnnouncements(user: any, id: number) {
+    const cacheKey = 'get-announcements';
     const announcement = await this.announcementsRepository.findOne({
       where: {
         id,
       },
     });
     if (!announcement) throw new NotFoundException('Announcement not found');
-    if (announcement.user !== user.id)
+    if (announcement.user.id !== user.id)
       throw new UnauthorizedException(
         'Unauthorized action on this announcement',
       );
-
+    await this.cacheManager.delete(cacheKey);
     return this.announcementsRepository.remove(announcement);
   }
 }

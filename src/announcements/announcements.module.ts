@@ -4,6 +4,8 @@ import { AnnouncementsEntity } from './announcements.entity';
 import { AnnouncementsController } from './announcements.controller';
 import { AnnouncementsService } from './announcements.service';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CacheService } from '../cache/cache.service';
+import { CACHE_PROVIDER_TOKEN } from '../cache/cache.interface';
 
 @Module({
   imports: [
@@ -16,6 +18,12 @@ import { ThrottlerModule } from '@nestjs/throttler';
     ]),
   ],
   controllers: [AnnouncementsController],
-  providers: [AnnouncementsService],
+  providers: [
+    AnnouncementsService,
+    {
+      provide: CACHE_PROVIDER_TOKEN,
+      useClass: CacheService,
+    },
+  ],
 })
 export class AnnouncementsModule {}
