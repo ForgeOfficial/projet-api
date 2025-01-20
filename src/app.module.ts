@@ -6,8 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AnnouncementsModule } from './announcements/announcements.module';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -24,6 +23,11 @@ import { APP_GUARD } from '@nestjs/core';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '30m' },
     }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 1000 * 60 * 60 * 24, // 24 hours
+    }),
+
     UsersModule,
     AnnouncementsModule,
   ],
