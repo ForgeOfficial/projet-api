@@ -18,15 +18,11 @@ export class OAuthController {
     response.cookie('token', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
-      maxAge: 30 * 60 * 1000,
+      sameSite: 'none',
+      maxAge: 30 * 60 * 1000
     });
-    return response.send(accessToken);
+    return response.redirect('http://localhost:3001');
   }
-
-  @Get('twitter')
-  @UseGuards(AuthGuard('twitter'))
-  async twitterAuth() {}
 
   @Get('github')
   @UseGuards(AuthGuard('github'))
@@ -39,9 +35,9 @@ export class OAuthController {
     response.cookie('token', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 30 * 60 * 1000,
     });
-    return response.send(accessToken);
+    return response.redirect('http://localhost:3001');
   }
 }
