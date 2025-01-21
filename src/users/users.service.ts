@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersEntity } from './users.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
+import { JwtBlacklistEntity } from './jwtBlacklist.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersEntity)
     private readonly userRepository: Repository<UsersEntity>,
+    @InjectRepository(JwtBlacklistEntity)
+    private readonly jwtRepository: Repository<JwtBlacklistEntity>,
     private jwtService: JwtService,
   ) {}
 
@@ -20,7 +24,7 @@ export class UsersService {
         mail,
       },
     });
-    if (userAlreadyExist) throw new Error('User already exists');
+    if (userAlreadyExist) throw new HttpException('User already exists', 400);
 
     const user = this.userRepository.create({
       firstname,
@@ -28,7 +32,16 @@ export class UsersService {
       mail,
       password,
     });
-    return this.userRepository.save(user);
+
+    const savedUser = await this.userRepository.save(user);
+
+    const payload = {
+      id: savedUser.id,
+      firstname: savedUser.firstname,
+      lastname: savedUser.lastname,
+    };
+
+    return await this.jwtService.signAsync(payload);
   }
 
   async login(userBody: any) {
@@ -36,11 +49,12 @@ export class UsersService {
     const user = await this.userRepository.findOne({
       where: {
         mail,
+        provider: 'local'
       },
     });
-    if (!user) throw new Error('User not found');
+    if (!user) throw new HttpException('User not found', 404);
 
-    if (user.password !== password) throw new Error('Passwords do not match');
+    if (user.password !== password) throw new HttpException('Passwords do not match', 400);
 
     const payload = {
       id: user.id,
@@ -48,5 +62,17 @@ export class UsersService {
       lastname: user.lastname,
     };
     return await this.jwtService.signAsync(payload);
+  }
+
+  async logout(req: any, response: Response) {
+    response.clearCookie('token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+    const jwt = this.jwtRepository.create({
+      jwt: req.cookies['token']
+    });
+    await this.jwtRepository.save(jwt);
   }
 }

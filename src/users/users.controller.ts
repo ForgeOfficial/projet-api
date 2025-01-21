@@ -16,8 +16,15 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
-  register(@Body() userBody: any) {
-    return this.usersService.register(userBody);
+  async register(@Body() userBody: any, @Res() response: Response) {
+    const accessToken = await this.usersService.register(userBody);
+    response.cookie('token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 30 * 60 * 1000,
+    });
+    return response.send(accessToken);
   }
 
   @Post('login')
@@ -26,7 +33,7 @@ export class UsersController {
     response.cookie('token', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 30 * 60 * 1000,
     });
     return response.send(accessToken);
@@ -36,6 +43,7 @@ export class UsersController {
   @UseGuards(UsersGuard)
   getUser(@Request() req: any) {
     return {
+      id: req.user.id,
       firstname: req.user.firstname,
       lastname: req.user.lastname,
     };
@@ -43,12 +51,8 @@ export class UsersController {
 
   @Post('logout')
   @UseGuards(UsersGuard)
-  logout(@Res() response: Response) {
-    response.clearCookie('token', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
+  async logout(@Request() req: any, @Res() response: Response) {
+    await this.usersService.logout(req, response);
     return response.send({ message: 'Successfully logged out' });
   }
 }

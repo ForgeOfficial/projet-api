@@ -6,10 +6,11 @@ import { AnnouncementsService } from './announcements.service';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheService } from '../cache/cache.service';
 import { CACHE_PROVIDER_TOKEN } from '../cache/cache.interface';
+import { JwtBlacklistEntity } from '../users/jwtBlacklist.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AnnouncementsEntity]),
+    TypeOrmModule.forFeature([AnnouncementsEntity, JwtBlacklistEntity]),
     ThrottlerModule.forRoot([
       {
         ttl: 1_000,
