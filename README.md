@@ -15,17 +15,31 @@ Première version du produit BoiteAnnonces permettant aux utilisateurs de publie
 
 # <a name="Auteurs">Auteurs:</a>
 - [Caville Maxime](https://github.com/ForgeOfficial)
-- [Compagnon Romain](https://github.com/impelran)
+- [Compagnon Romain](https://github.com/impelran) (projet créé sur le compte de Maxime, il est le seul à pouvoir faire les commits)
 
 <br>
 
 # <a name="Utilisation">Utilisation:</a>
 ##### 1. Installation
+###### a. Backend
 ```bash
 npm install
 ```
-
-##### 2. Lancement
 ```bash
 npm run start
 ```
+
+###### b. Frontend
+Dans un deuxieme terminal:
+```bash
+cd frontend
+```
+```bash
+npm install
+```
+```bash
+npm run dev
+```
+
+##### 2. Acceder au site
+http://localhost:3001
