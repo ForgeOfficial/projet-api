@@ -23,6 +23,8 @@ Première version du produit BoiteAnnonces permettant aux utilisateurs de publie
 ##### 1. Installation
 ```bash
 git clone https://github.com/ForgeOfficial/projet-api.git
+```
+```bash
 cd projet-api
 ```
 ###### a. Backend
