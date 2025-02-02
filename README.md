@@ -21,6 +21,10 @@ Première version du produit BoiteAnnonces permettant aux utilisateurs de publie
 
 # <a name="Utilisation">Utilisation:</a>
 ##### 1. Installation
+```bash
+git clone https://github.com/ForgeOfficial/projet-api.git
+cd projet-api
+```
 ###### a. Backend
 ```bash
 npm install
